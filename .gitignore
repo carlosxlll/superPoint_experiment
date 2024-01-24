@@ -2,3 +2,4 @@
 .hypothesis/
 data/*
 wandb/*
+export/*
