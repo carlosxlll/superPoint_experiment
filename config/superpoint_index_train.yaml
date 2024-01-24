@@ -66,8 +66,8 @@ solver:
     train_batch_size: 2
     test_batch_size: 2
     save_dir: './export/'
-    model_name: 'SBC'
-    experiment_name : '1.1.superpoint_bn_coco'
-    experiment_detail : 'raw superPoint_bn in COCO'
+    model_name: 'SBIC'
+    experiment_name : '2.1.superpoint_bn_index_coco'
+    experiment_detail : 'new superPoint_bn_index in COCO'
     img_watch_path : '/root/workspace/code/mine/superPoint_experiment/data/coco/images/val2017/000000016439.jpg'
     

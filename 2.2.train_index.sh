@@ -1,0 +1,1 @@
+python train_only_super_index.py ./config/superpoint_index_train.yaml

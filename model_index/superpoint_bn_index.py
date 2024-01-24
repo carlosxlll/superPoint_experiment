@@ -3,21 +3,21 @@ import torch.nn as nn
 import sys
 sys.path.append("/root/workspace/code/mine/superPoint_experiment")
 from solver.nms import box_nms
-from model_index.modules.cnn.index_vgg_backbone import VGGBackbone,VGGBackboneBN
+from model_index.modules.cnn.index_vgg_backbone import VGGBackbone_index,VGGBackboneBN_index
 from model_index.modules.cnn.index_cnn_heads import DetectorHead, DescriptorHead
 
-class SuperPointBNNet(torch.nn.Module):
+class SuperPointBNNet_index(torch.nn.Module):
     """ Pytorch definition of SuperPoint Network. """
 
     def __init__(self, config, input_channel=1, grid_size=8, device='cpu', using_bn=True):
-        super(SuperPointBNNet, self).__init__()
+        super(SuperPointBNNet_index, self).__init__()
         self.nms = config['nms']
         self.det_thresh = config['det_thresh']
         self.topk = config['topk']
         if using_bn:
-            self.backbone = VGGBackboneBN(config['backbone']['vgg'], input_channel, device=device)
+            self.backbone = VGGBackboneBN_index(config['backbone']['vgg'], input_channel, device=device)
         else:
-            self.backbone = VGGBackbone(config['backbone']['vgg'], input_channel, device=device)
+            self.backbone = VGGBackbone_index(config['backbone']['vgg'], input_channel, device=device)
         ##
         self.detector_head = DetectorHead(input_channel=config['det_head']['feat_in_dim'],
                                           grid_size=grid_size, using_bn=using_bn)
@@ -63,7 +63,7 @@ def test_all():
         with open('/root/workspace/code/mine/superPoint_my/config/superpoint_train.yaml', 'r') as f:
             config = yaml.safe_load(f)
         config = config['model']
-        model = SuperPointBNNet(config)
+        model = SuperPointBNNet_index(config)
         print(model)
         model.load_state_dict(torch.load('/root/workspace/code/mine/superPoint_my/superpoint_bn.pth'))
         print('Done')

@@ -34,13 +34,13 @@ class indexBlock(torch.nn.Module):
 
 
 
-class VGGBackbone(torch.nn.Module):
+class VGGBackbone_index(torch.nn.Module):
     """vgg backbone to extract feature
     Note:set eps=1e-3 for BatchNorm2d to reproduce results
          of pretrained model `superpoint_bn.pth`
     """
     def __init__(self, config, input_channel=1, device='cpu'):
-        super(VGGBackbone, self).__init__()
+        super(VGGBackbone_index, self).__init__()
         self.device = device
         channels = config['channels']
 
@@ -99,13 +99,13 @@ class VGGBackbone(torch.nn.Module):
 
 
 
-class VGGBackboneBN(torch.nn.Module):
+class VGGBackboneBN_index(torch.nn.Module):
     """vgg backbone to extract feature
     Note:set eps=1e-3 for BatchNorm2d to reproduce results
          of pretrained model `superpoint_bn.pth`
     """
     def __init__(self, config, input_channel=1, device='cpu'):
-        super(VGGBackboneBN, self).__init__()
+        super(VGGBackboneBN_index, self).__init__()
         self.device = device
         channels = config['channels']
 
