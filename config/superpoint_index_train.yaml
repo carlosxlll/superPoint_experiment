@@ -38,7 +38,7 @@ data:
                 allow_artifacts: true
             valid_border_margin: 3
 model:
-    name: 'superpoint'
+    name: 'superpoint_bn_index'
     using_bn: true
     grid_size: 8
     pretrained_model: '/root/workspace/code/mine/superPoint_experiment/superpoint_bn.pth'

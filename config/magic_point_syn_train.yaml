@@ -39,9 +39,9 @@ data:
                 translation_overflow: 0.05
             valid_border_margin: 2
 model:
-    name: 'magicpoint'
+    name: 'magic_bn_index' # magic_bn_index
     using_bn: true
-    pretrained_model: 'none'
+    pretrained_model: '/root/workspace/code/mine/superPoint_experiment/export/2.1.superpoint_bn_index_coco/SBIC_7_4.pth'
     grid_size: 8
     backbone:
         backbone_type: 'VGG'
@@ -58,5 +58,9 @@ solver:
     base_lr: 0.001
     train_batch_size: 64
     test_batch_size: 64
-    save_dir: './export'
-    model_name: 'mg_syn'
+    save_dir: './export/'
+    model_name: 'SBIC_magic'
+    experiment_name : '2.2.magic_bn_index_syn'
+    experiment_detail : 'new magic_bn_index in syn'
+    img_watch_path : '/root/workspace/code/mine/superPoint_experiment/data/coco/images/val2017/000000016439.jpg'
+    

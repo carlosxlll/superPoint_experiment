@@ -1,8 +1,8 @@
 data:
     name: 'hpatches' #hpatches
     data_dir: './data/hpatches' #./data/hpatches
-    export_dir: './data/repeatibility/hpatches/i'
-    alteration: 'i'  # 'all' 'i' 'v'
+    export_dir: './data/repeatibility/superpoint_bn_index/hpatches/v'
+    alteration: 'v'  # 'all' 'i' 'v'
     preprocessing:
         resize: [240,320]
     homography_adaptation:
@@ -20,9 +20,9 @@ data:
             allow_artifacts: true
             patch_ratio: 0.5
 model:
-    name: 'superpoint' #superpoint
+    name: 'superpoint_bn_index' #superpoint_bn_raw，superpoint_bn_index
     using_bn: true
-    pretrained_model: './superpoint_bn.pth'
+    pretrained_model: '/root/workspace/code/mine/superPoint_experiment/export/2.1.superpoint_bn_index_coco/SBIC_7_4.pth'
     grid_size: 8
     backbone:
         backbone_type: 'VGG'

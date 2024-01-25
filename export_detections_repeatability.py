@@ -9,14 +9,16 @@ from dataset.patch import PatchesDataset
 from dataset.synthetic_shapes import SyntheticShapes
 from model.magic_point import MagicPoint
 from model.superpoint_bn import SuperPointBNNet
+from model_index.superpoint_bn_index import SuperPointBNNet_index
 
 
 if __name__=="__main__":
     ##
-    with open('./config/detection_repeatability.yaml', 'r', encoding='utf8') as fin:
+    with open('./config/3.detection_repeatability.yaml', 'r', encoding='utf8') as fin:
         config = yaml.safe_load(fin)
 
     output_dir = config['data']['export_dir']
+    print('Exporting to {}'.format(output_dir))
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -28,10 +30,13 @@ if __name__=="__main__":
 
     p_dataloader = DataLoader(dataset_, batch_size=1, shuffle=False, collate_fn=dataset_.batch_collator)
 
-    if config['model']['name'] == 'superpoint':
+    if config['model']['name'] == 'superpoint_bn_raw':
         net = SuperPointBNNet(config['model'], device=device, using_bn=config['model']['using_bn'])
+    elif config['model']['name'] == 'superpoint_bn_index':
+        net = SuperPointBNNet_index(config['model'], device=device, using_bn=config['model']['using_bn'])
     elif config['model']['name'] == 'magicpoint':
         net = MagicPoint(config['model'], device=device)
+        
 
     net.load_state_dict(torch.load(config['model']['pretrained_model'], map_location=device))
     net.to(device).eval()

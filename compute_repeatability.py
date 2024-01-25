@@ -57,7 +57,7 @@ def select_top_k(prob, thresh=0, num=300):
 
 if __name__=='__main__':
 
-    experiments = ['./data/repeatibility/hpatches/v']
+    experiments = ['./data/repeatibility/superpoint_bn_index/hpatches/v']
     confidence_thresholds = [0.015, ]
 
     ## show keypoints
@@ -74,7 +74,7 @@ if __name__=='__main__':
             points2 = select_top_k(d['warp_prob'], thresh=thresh)
             im2 = draw_keypoints(warp_img, points2, (0, 255, 0))/255.
 
-            plot_imgs([im1, im2], ylabel=e, dpi=200, cmap='gray',
+            plot_imgs(i,'./data/repeatibility/superpoint_bn_index/picture/v/', [im1, im2], ylabel=e, dpi=200, cmap='gray',
                       titles=[str(len(points1[0])) + ' points', str(len(points2[0])) + ' points'])
 
     ## compute repeatability
