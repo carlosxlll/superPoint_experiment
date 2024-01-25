@@ -1,0 +1,1 @@
+python 5.superpointBN_index_coco.py ./config/5.superpointBN_index_coco.yaml

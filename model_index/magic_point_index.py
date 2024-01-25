@@ -2,7 +2,7 @@
 import torch
 from solver.nms import box_nms
 from model_index.modules.cnn.index_vgg_backbone import VGGBackbone_index,VGGBackboneBN_index
-from model_index.modules.cnn.index_cnn_heads import DetectorHead, DescriptorHead
+from model_index.modules.cnn.index_cnn_heads import DetectorHead
 
 
 class MagicPoint_index(torch.nn.Module):

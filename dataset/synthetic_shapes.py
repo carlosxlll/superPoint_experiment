@@ -25,7 +25,7 @@ class SyntheticShapes(Dataset):
         'add_augmentation_to_test_set': False,
         'num_parallel_calls': 10,
         'generation': {
-            'split_sizes': {'training': 10000, 'validation': 200, 'test': 500},
+            'split_sizes': {'training': 100, 'validation': 200, 'test': 500},
             'image_size': [960, 1280],
             'random_seed': 0,
             'params': {
@@ -56,14 +56,14 @@ class SyntheticShapes(Dataset):
     }
     drawing_primitives = [
         'draw_lines',
-        'draw_polygon',
-        'draw_multiple_polygons',
-        'draw_ellipses',
-        'draw_star',
-        'draw_checkerboard',
-        'draw_stripes',
-        'draw_cube',
-        'gaussian_noise'
+        # 'draw_polygon',
+        # 'draw_multiple_polygons',
+        # 'draw_ellipses',
+        # 'draw_star',
+        # 'draw_checkerboard',
+        # 'draw_stripes',
+        # 'draw_cube',
+        # 'gaussian_noise'
     ]
 
     def __init__(self, config, task, device='cpu'):

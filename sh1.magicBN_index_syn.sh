@@ -1,0 +1,1 @@
+python 1.magicBN_index_syn.py ./config/1.magicBN_index_syn.yaml

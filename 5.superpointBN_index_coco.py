@@ -179,7 +179,7 @@ if __name__=='__main__':
 
     # 配置参数
     parser = argparse.ArgumentParser()
-    parser.add_argument('config', type=str, default='./config/superpoint_train.yaml')
+    parser.add_argument('config', type=str, default='./config/5.superpointBN_index_coco.yaml')
     args = parser.parse_args()
     config_file = args.config
     assert (os.path.exists(config_file))
@@ -205,6 +205,7 @@ if __name__=='__main__':
 
     # 加载预训练模型
     if os.path.exists(config['model']['pretrained_model']):
+        print('loading pretrained model from {}'.format(config['model']['pretrained_model']))
         pre_model_dict = torch.load(config['model']['pretrained_model'])
         model_dict = model.state_dict()
         for k,v in pre_model_dict.items():
