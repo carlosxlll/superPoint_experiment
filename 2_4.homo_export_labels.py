@@ -11,7 +11,10 @@ from solver.nms import box_nms
 from utils.tensor_op import erosion2d
 from dataset.utils.homographic_augmentation import sample_homography,ratio_preserving_resize
 from model_index.magic_point_index import MagicPoint_index
-
+import torch.nn as nn
+import multiprocessing
+if multiprocessing.get_start_method() != 'spawn':
+    multiprocessing.set_start_method('spawn', force=True)
 
 
 homography_adaptation_default_config = {
@@ -139,7 +142,7 @@ def homography_adaptation(net, raw_image, config, device='cpu'):
             'mean_prob': mean_prob, 'input_images': images, 'H_probs': probs}
 
 
-if __name__=='__main__':
+def main_raw():
     import matplotlib.pyplot as plt
 
     with open('./config/2_4.homo_export_labels.yaml', 'r', encoding='utf8') as fin:
@@ -160,7 +163,7 @@ if __name__=='__main__':
     #         image_list.append(line.strip())
     # image_list = image_list[0:int(len(image_list)*0.5)]
 
-    device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda:2' if torch.cuda.is_available() else 'cpu'
     print(device, 'using....')
 
     net = MagicPoint_index(config['model'], input_channel=1, grid_size=8,device=device, using_bn=True)
@@ -206,15 +209,134 @@ if __name__=='__main__':
             print('{}, {}'.format(os.path.join(config['data']['dst_label_path'], fname+'.npy'), len(pt)))
 
         ## debug
-        for img, pts in zip(batch_raw_imgs,points):
-            debug_img = cv2.merge([img, img, img])
-            for pt in pts:
-                cv2.circle(debug_img, (int(pt[1]),int(pt[0])), 1, (0,255,0), thickness=-1)
-            plt.imshow(debug_img)
-            plt.savefig('./data/sample/{}.png'.format(fname))
-        if idx>=10:
-            break
+        # for img, pts in zip(batch_raw_imgs,points):
+        #     debug_img = cv2.merge([img, img, img])
+        #     for pt in pts:
+        #         cv2.circle(debug_img, (int(pt[1]),int(pt[0])), 1, (0,255,0), thickness=-1)
+        #     plt.imshow(debug_img)
+        #     plt.savefig('./data/sample/{}.png'.format(fname))
+        # if idx>=10:
+        #     break
         
         
         batch_fnames,batch_imgs,batch_raw_imgs = [],[],[]
     print('Done')
+
+def process_images(image_list, config, device_i, queue):
+    device = 'cuda:{}'.format(device_i) if torch.cuda.is_available() else 'cpu'
+    print(device, 'using....')
+
+    net = MagicPoint_index(config['model'], input_channel=1, grid_size=8,device=device, using_bn=True)
+    if os.path.exists(config['model']['pretrained_model']):
+        print('loading pretrained model from {}'.format(config['model']['pretrained_model']))
+        net.load_state_dict(torch.load(config['model']['pretrained_model']))
+    net.to(device).eval()
+
+    batch_fnames,batch_imgs,batch_raw_imgs = [],[],[]
+    for idx, fpath in tqdm(enumerate(image_list)):
+        root_dir, fname = os.path.split(fpath)
+        ##
+        img = read_image(fpath)
+        img = ratio_preserving_resize(img, config['data']['resize'])
+        t_img = to_tensor(img, device)
+        ##
+        batch_imgs.append(t_img)
+        batch_fnames.append(fname)
+        batch_raw_imgs.append(img)
+        ##
+        if len(batch_imgs)<1 and ((idx+1)!=len(image_list)):
+            continue
+
+        batch_imgs = torch.cat(batch_imgs)
+        outputs = homography_adaptation(net, batch_imgs, config['data']['homography_adaptation'], device=device)
+        prob = outputs['prob']
+        ##nms or threshold filter
+        if config['model']['nms']:
+            prob = [box_nms(p.unsqueeze(dim=0),#to 1HW
+                            config['model']['nms'],
+                            min_prob=config['model']['det_thresh'],
+                            keep_top_k=config['model']['topk']).squeeze(dim=0) for p in prob]
+            prob = torch.stack(prob)
+        pred = (prob>=config['model']['det_thresh']).int()
+        ##
+        points = [torch.stack(torch.where(e)).T for e in pred]
+        points = [pt.cpu().numpy() for pt in points]
+        queue.put((img, batch_fnames, points))
+        batch_fnames,batch_imgs,batch_raw_imgs = [],[],[]
+
+def save_points(config, queue, num_write_img):
+
+    while True:
+        img, batch_fnames, points = queue.get()
+        if batch_fnames is None:
+            print('batch_fnames is None. Done!')
+            break
+        for fname, pt in zip(batch_fnames, points):
+            cv2.imwrite(os.path.join(config['data']['dst_image_path'], fname), img)
+            np.save(os.path.join(config['data']['dst_label_path'], fname+'.npy'), pt)
+            num_write_img = num_write_img + 1
+            print('writed img num: ', num_write_img)
+            print('{}, {}'.format(os.path.join(config['data']['dst_label_path'], fname+'.npy'), len(pt)))
+        # debug
+        # for img, pts in zip(batch_raw_imgs,points):
+        #     debug_img = cv2.merge([img, img, img])
+        #     for pt in pts:
+        #         cv2.circle(debug_img, (int(pt[1]),int(pt[0])), 1, (0,255,0), thickness=-1)
+        #     plt.imshow(debug_img)
+        #     plt.savefig('./data/sample/{}.png'.format(fname))
+
+def main_multi_process():
+    with open('./config/2_4.homo_export_labels.yaml', 'r', encoding='utf8') as fin:
+        config = yaml.safe_load(fin)
+
+    if not os.path.exists(config['data']['dst_label_path']):
+        os.makedirs(config['data']['dst_label_path'])
+    if not os.path.exists(config['data']['dst_image_path']):
+        os.makedirs(config['data']['dst_image_path'])
+
+    image_list = os.listdir(config['data']['src_image_path'])
+    image_list = [os.path.join(config['data']['src_image_path'], fname) for fname in image_list]
+
+
+    # 将图像列表分成gpu_n*cpu_n份
+    gpu_n = 8
+    cpu_n = 2
+    image_lists = [[image_list[i+j*cpu_n::gpu_n*cpu_n] for j in range(cpu_n)] for i in range(gpu_n)]
+    print('raw_list_len: ', len(image_list))
+    print('gpu_list_len: ', len(image_lists))
+    print('cpu_list_len: ', len(image_lists[0]), len(image_lists[0][0]))
+
+    # 创建一个队列用于进程间的通信
+    queue = multiprocessing.Queue()
+
+    # 创建并启动多个进程
+    processes = []
+    for gpu_i in range(gpu_n):
+        for cpu_j in range(cpu_n):
+            p = multiprocessing.Process(target=process_images, args=(image_lists[gpu_i][cpu_j], config, gpu_i, queue))
+            p.start()
+            processes.append(p)
+
+    # 创建并启动一个进程用于保存点
+    num_write_img1 = 0
+    p = multiprocessing.Process(target=save_points, args=(config, queue, num_write_img1))
+    p.start()
+    processes.append(p)
+
+    # 等待所有进程结束
+    for p in processes[:-1]:
+        p.join()
+    
+    # send the signal
+    queue.put((None, None, None))
+    # now wait for the save_points process
+    processes[-1].join()
+    print('Done')
+
+
+if __name__=='__main__':
+    # main_raw()
+    main_multi_process()
+
+
+

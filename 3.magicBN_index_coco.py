@@ -89,7 +89,7 @@ def train_eval(model, dataloader, config):
                     # 保存模型
                     save_dir = os.path.join(config['solver']['save_dir'], config['solver']['experiment_name'])
                     os.makedirs(save_dir, exist_ok=True)  # 创建文件夹，如果已经存在则不会报错
-                    save_path = os.path.join(save_dir,'{}_{}_{}.pth'.format(config['solver']['model_name'],epoch, i//save_iter))
+                    save_path = os.path.join(save_dir,'{}_{}_{}.pth'.format(config['solver']['model_name'],epoch, i))
                     torch.save(model.state_dict(), save_path)
                     print('save model to {}'.format(save_path)) 
                     print('switch to train mode...')

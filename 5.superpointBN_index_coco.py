@@ -128,13 +128,16 @@ def train_eval(model, dataloader, config, device):
                     # 计算保存路径
                     save_dir = os.path.join(config['solver']['save_dir'], config['solver']['experiment_name'])
                     os.makedirs(save_dir, exist_ok=True)  # 创建文件夹，如果已经存在则不会报错
-                    save_path = os.path.join(save_dir,'{}_{}_{}.pth'.format(config['solver']['model_name'],epoch, i//save_iter))
+                    save_path = os.path.join(save_dir,'{}_{}_{}.pth'.format(config['solver']['model_name'],epoch, i))
                     # 保存模型
                     torch.save(model.state_dict(), save_path)
 
 
     except KeyboardInterrupt:
-        torch.save(model.state_dict(), "./export/key_interrupt_model.pth")
+        save_dir = os.path.join(config['solver']['save_dir'], config['solver']['experiment_name'])
+        os.makedirs(save_dir, exist_ok=True)  # 创建文件夹，如果已经存在则不会报错
+        save_path = os.path.join(save_dir,'{}_key_interrupt_model.pth'.format(config['solver']['model_name']))
+        torch.save(model.state_dict(), save_path)
 
 @torch.no_grad()
 def do_eval(model, dataloader, config, device):

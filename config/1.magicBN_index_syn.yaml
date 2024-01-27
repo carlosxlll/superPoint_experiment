@@ -1,6 +1,6 @@
 data:
     name: 'synthetic'
-    resize: [240,320]
+    resize: [120,160]
     primitives: 'all'
     truncate: {draw_ellipses: 0.3, draw_stripes: 0.2, gaussian_noise: 0.1}
     validation_size: 500
