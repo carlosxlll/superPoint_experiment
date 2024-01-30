@@ -1,10 +1,10 @@
 data:
     name: 'coco'
     resize: [240,320]
-    image_train_path: ['./data/mg_coco_coco_3e-2/images/train2017/',]
-    label_train_path: ['./data/mg_coco_coco_3e-2/labels/train2017/',]
-    image_test_path: './data/mg_coco_coco_3e-2/images/test2017/'
-    label_test_path: './data/mg_coco_coco_3e-2/labels/test2017/'
+    image_train_path: ['./data/mg_coco_v1/images/train2017/',]
+    label_train_path: ['./data/mg_coco_v1/labels/train2017/',]
+    image_test_path: './data/mg_coco_v1/images/test2017/'
+    label_test_path: './data/mg_coco_v1/labels/test2017/'
     augmentation:
         photometric:
             train_enable: true
@@ -44,7 +44,7 @@ model:
     det_thresh: 0.001 # 1/65
     nms: 4
     topk: -1
-    pretrained_model: '' # TODO
+    pretrained_model: './export/3.magic_bn_index_coco_add_epoch10/MBIC_9_1848.pth' # TODO
     backbone: 
         backbone_type: 'VGG'
         vgg:
@@ -55,10 +55,10 @@ solver:
     grid_size: 8
     epoch: 10
     base_lr: 0.001
-    train_batch_size: 32
-    test_batch_size: 32
+    train_batch_size: 64 #32
+    test_batch_size: 64 # 32
     save_dir: './export/'
-    model_name: 'MBIS'
-    experiment_name : '3.magic_bn_index_coco'
+    model_name: 'MBIC'
+    experiment_name : '3.magic_bn_index_coco_add2_epoch10'
     experiment_detail : 'new magic_bn_index in coco'
-    img_watch_path : '/root/workspace/code/mine/superPoint_experiment/data/coco/images/val2017/000000016439.jpg'
+    img_watch_path : './data/coco/images/val2017/000000017182.jpg'

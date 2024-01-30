@@ -41,7 +41,7 @@ model:
     name: 'superpoint_bn_index'
     using_bn: true
     grid_size: 8
-    pretrained_model: './export/1.magic_bn_index_syn/MBIS_4_1.pth' # TODO: add pretrained model
+    pretrained_model: './export/3.magic_bn_index_coco_add2_epoch10/MBIC_3_1848.pth' # TODO: add pretrained model
     backbone:
         backbone_type: 'VGG'
         vgg:
@@ -61,13 +61,14 @@ solver:
         negative_margin: 0.2
         lambda_d: 0.05
         lambda_loss: 10000
+        loss_grid_size: 0.6 # 7.5 TODO 
     epoch: 8
     base_lr: 0.001 #0.0001
-    train_batch_size: 2
-    test_batch_size: 2
+    train_batch_size: 4 #2
+    test_batch_size: 4 #2
     save_dir: './export/'
     model_name: 'SBIC'
-    experiment_name : '5.superpoint_bn_index_coco'
+    experiment_name : '5.superpoint_bn_index_coco_loss_0.5'
     experiment_detail : 'new superPoint_bn_index in COCO'
     img_watch_path : '/root/workspace/code/mine/superPoint_experiment/data/coco/images/val2017/000000016439.jpg'
     

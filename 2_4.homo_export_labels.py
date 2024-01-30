@@ -222,7 +222,7 @@ def main_raw():
         batch_fnames,batch_imgs,batch_raw_imgs = [],[],[]
     print('Done')
 
-def process_images(image_list, config, device_i, queue):
+def process_images(image_list, config, device_i, queue, lock):
     device = 'cuda:{}'.format(device_i) if torch.cuda.is_available() else 'cpu'
     print(device, 'using....')
 
@@ -261,7 +261,12 @@ def process_images(image_list, config, device_i, queue):
         ##
         points = [torch.stack(torch.where(e)).T for e in pred]
         points = [pt.cpu().numpy() for pt in points]
-        queue.put((img, batch_fnames, points))
+        lock.acquire()  # 获取锁
+        try:
+            queue.put((img, batch_fnames, points))
+        finally:
+            lock.release()  # 释放锁
+
         batch_fnames,batch_imgs,batch_raw_imgs = [],[],[]
 
 def save_points(config, queue, num_write_img):
@@ -301,19 +306,38 @@ def main_multi_process():
     # 将图像列表分成gpu_n*cpu_n份
     gpu_n = 8
     cpu_n = 2
-    image_lists = [[image_list[i+j*cpu_n::gpu_n*cpu_n] for j in range(cpu_n)] for i in range(gpu_n)]
-    print('raw_list_len: ', len(image_list))
-    print('gpu_list_len: ', len(image_lists))
-    print('cpu_list_len: ', len(image_lists[0]), len(image_lists[0][0]))
+    total_n = gpu_n * cpu_n
+    # 使用numpy.array_split将image_list分割成total_n个子列表
+    sub_lists = np.array_split(image_list, total_n)
+
+    # 创建一个空的二维列表
+    image_lists = [[[] for _ in range(cpu_n)] for _ in range(gpu_n)]
+    # 将sub_lists的元素分配给每个子列表
+    for i in range(total_n):
+        gpu_idx = i // cpu_n
+        cpu_idx = i % cpu_n
+        image_lists[gpu_idx][cpu_idx] = list(sub_lists[i])
+    
+    # check
+    num_raw_list = len(image_list)
+    num_now_list = 0
+    for sub_list in image_lists:
+        for sub_sub_list in sub_list:
+            num_now_list = num_now_list + len(sub_sub_list)
+            print(len(sub_sub_list))
+    print('num_now_list: ', num_now_list)
+    print('num_raw_list: ', num_raw_list)
 
     # 创建一个队列用于进程间的通信
     queue = multiprocessing.Queue()
+    # 创建一个锁
+    lock = multiprocessing.Lock()
 
     # 创建并启动多个进程
     processes = []
     for gpu_i in range(gpu_n):
         for cpu_j in range(cpu_n):
-            p = multiprocessing.Process(target=process_images, args=(image_lists[gpu_i][cpu_j], config, gpu_i, queue))
+            p = multiprocessing.Process(target=process_images, args=(image_lists[gpu_i][cpu_j], config, gpu_i, queue, lock))
             p.start()
             processes.append(p)
 
@@ -334,9 +358,49 @@ def main_multi_process():
     print('Done')
 
 
+def test():
+    with open('./config/2_4.homo_export_labels.yaml', 'r', encoding='utf8') as fin:
+        config = yaml.safe_load(fin)
+
+    if not os.path.exists(config['data']['dst_label_path']):
+        os.makedirs(config['data']['dst_label_path'])
+    if not os.path.exists(config['data']['dst_image_path']):
+        os.makedirs(config['data']['dst_image_path'])
+
+    image_list = os.listdir(config['data']['src_image_path'])
+    image_list = [os.path.join(config['data']['src_image_path'], fname) for fname in image_list]
+
+
+    # 将图像列表分成gpu_n*cpu_n份
+    gpu_n = 8
+    cpu_n = 2
+    total_n = gpu_n * cpu_n
+    # 使用numpy.array_split将image_list分割成total_n个子列表
+    sub_lists = np.array_split(image_list, total_n)
+
+    # 创建一个空的二维列表
+    image_lists = [[[] for _ in range(cpu_n)] for _ in range(gpu_n)]
+    # 将sub_lists的元素分配给每个子列表
+    for i in range(total_n):
+        gpu_idx = i // cpu_n
+        cpu_idx = i % cpu_n
+        image_lists[gpu_idx][cpu_idx] = list(sub_lists[i])
+    
+    # check
+    num_raw_list = len(image_list)
+    num_now_list = 0
+    for sub_list in image_lists:
+        for sub_sub_list in sub_list:
+            num_now_list = num_now_list + len(sub_sub_list)
+            print(len(sub_sub_list))
+    print('num_now_list: ', num_now_list)
+    print('num_raw_list: ', num_raw_list)
+
+
 if __name__=='__main__':
     # main_raw()
     main_multi_process()
+    # test()
 
 
 

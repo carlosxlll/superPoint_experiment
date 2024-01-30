@@ -110,7 +110,8 @@ def descriptor_loss(config, descriptors, warped_descriptors, homographies, valid
     coord_cells = torch.reshape(coord_cells, [1,1,1,Hc,Wc,2]).type(torch.float32)
     warped_coord_cells = torch.reshape(warped_coord_cells, [batch_size, Hc, Wc, 1, 1, 2])
     cell_distances = torch.norm(coord_cells - warped_coord_cells, dim=-1, p=2)
-    s = (cell_distances<=(grid_size-0.5)).float()#
+    loss_grid_size = config['loss']['loss_grid_size']
+    s = (cell_distances<=(loss_grid_size-0.1)).float()#
     # s[id_batch, h, w, h', w'] == 1 if the point of coordinates (h, w) warped by the
     # homography is at a distance from (h', w') less than config['grid_size']
     # and 0 otherwise

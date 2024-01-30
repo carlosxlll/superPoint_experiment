@@ -2,8 +2,8 @@ data:
     name: 'coco'
     resize: [240,320]
     src_image_path: './data/coco/images/train2017/'
-    dst_label_path: './data/mg_coco_v1/labels/train2017/'
-    dst_image_path: './data/mg_coco_v1/images/train2017/'
+    dst_label_path: './data/mg_coco_v2/labels/train2017/'
+    dst_image_path: './data/mg_coco_v2/images/train2017/'
     homography_adaptation:
         num: 100
         aggregation: 'sum'
@@ -27,7 +27,7 @@ model:
     det_thresh: 0.015 #0.015
     nms: 4
     topk: 0
-    pretrained_model: './export/1.magic_bn_index_syn/MBIS_19_1051.pth' # TODO
+    pretrained_model: './export/3.magic_bn_index_coco_add2_epoch10/MBIC_3_1848.pth' # TODO
     backbone:
         backbone_type: 'VGG'
         vgg:

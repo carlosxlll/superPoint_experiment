@@ -60,7 +60,12 @@ def train_eval(model, dataloader, config):
                 optimizer.step()
 
 
-                if (i%500==0):
+                # if (i%500==0):
+                #     wandb.log({'lr':optimizer.state_dict()['param_groups'][0]['lr'],
+                #                'near500_mean_loss':np.mean(mean_loss)}, step=(epoch*len(dataloader['train'])+i) )
+                #     mean_loss = []
+
+                if (i%1==0):
                     wandb.log({'lr':optimizer.state_dict()['param_groups'][0]['lr'],
                                'near500_mean_loss':np.mean(mean_loss)}, step=(epoch*len(dataloader['train'])+i) )
                     mean_loss = []
@@ -142,7 +147,7 @@ if __name__=='__main__':
     # 创建保存模型的文件夹，设备
     if not os.path.exists(config['solver']['save_dir']):
         os.makedirs(config['solver']['save_dir'])
-    device = 'cuda:4' if torch.cuda.is_available() else 'cpu'
+    device = 'cuda:1' if torch.cuda.is_available() else 'cpu'
     print('using... device' , device)
 
     ##Make Dataloader

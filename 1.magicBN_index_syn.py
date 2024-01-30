@@ -12,6 +12,7 @@ from model_index.magic_point_index import MagicPoint_index
 from solver.loss import loss_func
 import wandb
 import cv2
+from model.magic_point import MagicPoint
 
 
 # 加载监测图片
